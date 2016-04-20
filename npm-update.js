@@ -1,9 +1,9 @@
 'use strict'
 
 
-var FOLLOW = require('follow')
-var NPM_STATS = require('npm-stats')
-var ASYNC = require('async')
+var Follow = require('follow')
+var Npm_stats = require('npm-stats')
+var Async = require('async')
 
 
 module.exports = function npm_update (options) {
@@ -45,7 +45,7 @@ module.exports = function npm_update (options) {
         state.registry_subscribe.count = 0
         state.registry_subscribe.since = new Date().toISOString()
 
-        feed = new FOLLOW.Feed({
+        feed = new Follow.Feed({
           db: options.registry,
           since: 'now'
         })
@@ -60,7 +60,7 @@ module.exports = function npm_update (options) {
           seneca.act('role:npm,info:change', {name: change.id})
         })
 
-        feed.FOLLOW()
+        feed.Follow()
       })
   }
 
@@ -81,7 +81,7 @@ module.exports = function npm_update (options) {
 
           state.process_modules.total = list.length
 
-          ASYNC.eachLimit(list, options.batchsize, function (mod, done) {
+          Async.eachLimit(list, options.batchsize, function (mod, done) {
             if ('run' !== state.process_modules.status) return
 
             var name = mod.id
@@ -116,14 +116,14 @@ module.exports = function npm_update (options) {
         state.download_modules.done = 0
         state.download_modules.total = 0
 
-        var stats = NPM_STATS()
+        var stats = Npm_stats()
         stats.list({}, function (err, list) {
           if (err) return result(err)
           if ('run' !== state.download_modules.status) return
 
           state.download_modules.total = list.length
 
-          ASYNC.eachLimit(list, options.batchsize, function (name, done) {
+          Async.eachLimit(list, options.batchsize, function (name, done) {
             if ('run' !== state.download_modules.status) return
 
             seneca.make('mod', {id$: name, done: false}).save$(function (err, mod) {
